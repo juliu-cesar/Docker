@@ -301,3 +301,11 @@ Caso seja necessário remover todos os volumes da maquina, podemos utilizar o se
 ```bash
 docker volume prune
 ```
+
+## Docker Hub
+
+O image registry padrão é o Docker Hub, ou seja, sempre que o Docker não encontrar uma imagem na maquina, ele ira procurar no Hub se aquela imagem existe, e, caso exista efetua o download. Podemos também baixar uma imagem para o repositório local utilizando o comando `docker pull nome_da_imagem`, não sendo necessário subir um container só para efetuar o download da mesma. Lembrando que apos o nome da imagem, é possível escolher a versão dela:
+
+```bash
+docker pull ubuntu:mantic-20230819
+```
