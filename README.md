@@ -68,11 +68,11 @@ Para construirmos uma imagem precisamos de um **arquivo de definição de imagen
 
 - `FROM: ImageName` : informa qual a imagem base que sera utilizada para construir a nossa imagem personalizada. Como visto anteriormente partimos de uma imagem em branco, porem na pratica sempre vamos partir de alguma outra imagem ja pronta.
 
-- `RUN:` : executa comandos no sistema de arquivos da imagem durante a construção. Ou seja podemos executar comandos como `RUN apt-get update && apt-get install` para atualizar o sistema e instalar o Apache na imagem base.
+- `RUN:` : executa comandos no sistema de arquivos da imagem durante a construção. Ou seja podemos executar comandos como `RUN apt-get update && apt-get install` para efetuar a atualização do sistema e instalar o o que for necessário na imagem.
 
 - `COPY` e `ADD` : copiam arquivos ou diretórios do host para a imagem. O COPY é usado para copiar arquivos locais para a imagem, enquanto ADD também pode baixar arquivos da internet e extrair arquivos compactados.
 
-- `WORKDIR` : define o diretório de trabalho para instruções subsequentes, onde os comandos serão executados. Por exemplo `WORKDIR /app`.
+- `WORKDIR` : define o diretório de trabalho para instruções subsequentes, onde os comandos serão executados. Por exemplo `WORKDIR /app` fara com que os comandos sejam executados dentro dessa pasta no container. Também é possível definir mais de um diretório de trabalho no dockerfile, onde um trecho de código é executado em uma pasta, e outro trecho em uma nova pasta.
 
 - `ENV` : Define variáveis de ambiente na imagem, exemplo `ENV MY_ENV_VARIABLE=my_value`.
 
