@@ -90,3 +90,15 @@ CMD ["nginx", "-g", "daemon off;"]
 Quando iniciamos o container, o ENTRYPOINT ira executar o arquivo *docker-entrypoint.sh*, que é um arquivo de shell script responsável por executar algumas funções necessárias para o Nginx. Ao final desse arquivo temos o código `exec "$@"`, que serve para executar qualquer comando que receber como parâmetro, nesse caso são os do CMD, que ira subir o servidor local do Nginx. Porem quando passamos algum parâmetro no comando de execução, como por exemplo o `bash`, ele substituirá o CMD, com isso iniciando o shell ao invés de subir o Nginx.
 
 Outro detalhe desse trecho é o comando EXPOSE que expõe a porta 80 do container, mas veremos esse comando mais a frente.
+
+## Subindo uma imagem no Docker Hub
+
+Para subir uma imagem primeiramente é preciso ter uma conta no Docker Hub e também utilizar o nome de usuário no nome da tag da imagem na hora de fazer o build, por exemplo `docker build -t juliucesar/nginx-html .`. Com isso podemos dar sequencia para o login e push da imagem.
+
+```bash
+docker login
+
+docker push juliucesar/nginx-html
+```
+
+O primeiro comando é para efetuar o login e em seguida enviamos a imagem para o repositório no Docker Hub com o *push*.

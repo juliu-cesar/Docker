@@ -120,7 +120,7 @@ O conceito de Host possui quatro pontos principais que são:
 
 3. Volumes : gerencia os volumes que serão utilizados para **persistir** os dados dos containers. Como visto anteriormente, quando um container é desmontado todos os seus dados são perdidos, e isso é resolvido definindo um *volume* (uma pasta na maquina) onde sera salvo esses dados. Podemos também definir uma mesma pasta para diversos containers, onde eles poderão trocar arquivos utilizando esse mesmo volume.
 
-4. Network : a parte de network garante além de outras coisas a **comunicação** entre containers. Ele cria uma rede interna e cada contêiner é conectado a essa rede, que funciona como uma rede virtual isolada.
+4. Network : por padrão o network criado pelo docker é do tipo *bridge*, que cria uma rede privada para os containers na qual eles podem se **comunicar**, mas não com o host ou outros dispositivos. Mais a frente veremos outros tipos de network.
 
 Além do Host temos mais duas instancias importantes, que são a:
 
@@ -309,3 +309,23 @@ O image registry padrão é o Docker Hub, ou seja, sempre que o Docker não enco
 ```bash
 docker pull ubuntu:mantic-20230819
 ```
+
+## Network
+
+Anteriormente vimos que o network padrão gerado pelo docker é o *bridge*, porem existem outros tipos de conexão, que são eles:
+
+- **Bridge** : esse é o network padrão no docker quando é criado um novo container. O docker gera uma rede privada na qual o containers podem se comunicar entre si, mas não com o host ou outros dispositivos externos. Ou seja, ele promove um isolamento de rede a menos que seja configurado de outra forma.
+
+- **Host** : mescla a rede do host com a rede dos containers, o que significa que o contêiner não tem sua própria interface de rede. Isso pode gerar um desempenho ligeiramente melhor se comparado com as redes bridge, pois elimina a sobrecarga da tradução de endereços de rede (NAT). No entanto, é importante salientar que pode ser menos seguro em alguns cenários, uma vez que o contêiner está diretamente exposto à rede do host.
+
+- **Overlay** : este tipo de rede é utilizado para permitir que containers em diferentes hosts se comuniquem entre si, criando uma rede que abrange vários hosts. Essa tipo de network é frequentemente usada em clusters de **Docker Swarm** (ferramenta de orquestração de contêineres nativa do Docker) ou Kubernetes para facilitar a comunicação entre contêineres em diferentes nós, permitindo que a aplicação docker tenha uma maior escala.
+
+- **Macvlan** : a rede macvlan permite que os contêineres se conectem diretamente à rede física do host, onde é preciso definir um mac address para cada container que se conecte na rede. É um tipo de network pouco utilizado.
+
+- **None Network** : é utilizado apenas para desabilitar completamente a rede em um contêiner. Pode ser util quando é preciso isolar um container de qualquer conexão.
+
+Para verificar a lista de comando disponíveis para a parte de network, basta digitar `docker network`. Um dos comando que exibe todos os networks da maquina é o `docker network ls`.
+
+### Trabalhando com Bridge
+
+Como este tipo de network é o mais utilizado, vamos analisar melhor o funcionamento desse tipo de rede.
