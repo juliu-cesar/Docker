@@ -328,4 +328,52 @@ Para verificar a lista de comando disponíveis para a parte de network, basta di
 
 ### Trabalhando com Bridge
 
-Como este tipo de network é o mais utilizado, vamos analisar melhor o funcionamento desse tipo de rede.
+Como este tipo de network é o mais utilizado, vamos criar alguns containers e testar o funcionamento dessa rede.
+
+```bash
+docker run -d -it --name ubuntu1 bash
+
+docker run -d -it --name ubuntu2 bash
+```
+
+Note que apesar de rodar o container com a opção `-it` para tornar o terminal interativo, utilizamos também o `-d` que desanexa o terminal. Logo sera necessário anexar novamente o terminal para poder executar algum comando, mas veremos isso no tópico seguinte.
+
+Uma das opções da lista de comandos exibidas pelo *docker network* é o **inspect**, que como o nome sugere serve para inspecionar uma rede.
+
+```bash
+docker network inspect bridge
+```
+
+Ele exibira um json com diversas informações sobre a rede *bridge* e dentre elas a opção *Containers*, que mostra todos os containers que no momento estão utilizando este tipo de network, nesse caso o *ubuntu1* e *ubuntu2*. Algumas informações sobre os containers também serão exibidas, como o endereço Mac e o ipv4.
+
+#### Anexando o terminal com o shell do container
+
+Para anexar o terminal novamente podemos tanto utilizar o comando `docker exec` como o `docker attach`, mas nesse caso vamos usar a segunda opção.
+
+```bash
+docker attach ubuntu1
+```
+
+Agora podemos *pingar* o outro container para conferir que estão na mesma rede utilizando o comando `ping 172.17.0.3`. Porem com a configuração padrão do network bridge, a rede **não faz a resolução de nome**, ou seja, não conseguimos efetuar uma conexão utilizando o nome do container, por exemplo `ping ubuntu2`.
+
+## Criando um network personalizado
+
+Caso seja necessário a funcionalidade de resolução de nome na rede, podemos criar um network personalizado, vejamos abaixo:
+
+```bash
+docker network create --driver bridge redepersonalizada
+```
+
+Com isso criamos um network do tipo bridge com o nome *redepersonalizada*. É possível verificar essa nova rede com o `docker network ls`. Agora vamos criar dois containers nessa rede.
+
+```bash
+docker run -dit --name ubuntu1 --network redepersonalizada bash
+
+docker run -dit --name ubuntu2 --network redepersonalizada bash
+```
+
+Para selecionar em que rede o container sera criado, basta passar a opção `--network` com o nome do network.
+
+Entrando no ubuntu1 e efetuando um `ping ubuntu2`, verificamos que agora esse comando funciona com o nome do container.
+
+Caso seja criado um terceiro container que esteja na rede padrão bridge, ele não poderá se conectar com os outros dois containers, pois são redes separadas. Porem podemos conectar manualmente esse container na rede personalizada.
