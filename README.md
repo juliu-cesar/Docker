@@ -326,7 +326,7 @@ Anteriormente vimos que o network padrão gerado pelo docker é o *bridge*, pore
 
 Para verificar a lista de comando disponíveis para a parte de network, basta digitar `docker network`. Um dos comando que exibe todos os networks da maquina é o `docker network ls`.
 
-### Trabalhando com Bridge
+## Trabalhando com Bridge network
 
 Como este tipo de network é o mais utilizado, vamos criar alguns containers e testar o funcionamento dessa rede.
 
@@ -346,7 +346,7 @@ docker network inspect bridge
 
 Ele exibira um json com diversas informações sobre a rede *bridge* e dentre elas a opção *Containers*, que mostra todos os containers que no momento estão utilizando este tipo de network, nesse caso o *ubuntu1* e *ubuntu2*. Algumas informações sobre os containers também serão exibidas, como o endereço Mac e o ipv4.
 
-#### Anexando o terminal com o shell do container
+### Anexando o terminal com o shell do container
 
 Para anexar o terminal novamente podemos tanto utilizar o comando `docker exec` como o `docker attach`, mas nesse caso vamos usar a segunda opção.
 
@@ -356,7 +356,7 @@ docker attach ubuntu1
 
 Agora podemos *pingar* o outro container para conferir que estão na mesma rede utilizando o comando `ping 172.17.0.3`. Porem com a configuração padrão do network bridge, a rede **não faz a resolução de nome**, ou seja, não conseguimos efetuar uma conexão utilizando o nome do container, por exemplo `ping ubuntu2`.
 
-## Criando um network personalizado
+### Criando um network personalizado
 
 Caso seja necessário a funcionalidade de resolução de nome na rede, podemos criar um network personalizado, vejamos abaixo:
 
@@ -377,3 +377,31 @@ Para selecionar em que rede o container sera criado, basta passar a opção `--n
 Entrando no ubuntu1 e efetuando um `ping ubuntu2`, verificamos que agora esse comando funciona com o nome do container.
 
 Caso seja criado um terceiro container que esteja na rede padrão bridge, ele não poderá se conectar com os outros dois containers, pois são redes separadas. Porem podemos conectar manualmente esse container na rede personalizada.
+
+```bash
+docker network connect redepersonalizada ubuntu3
+```
+
+Com isso o container ubuntu3 se conectou na rede personalizada, e, agora possui acesso as novas funcionalidades dessa rede. Case seja feito um `network inspect` na rede *bridge* e na *redepersonalizada*, perceberemos que o ubuntu3 esta em ambas.
+
+## Trabalhando com Host network
+
+Este tipo de network também é muito importante de se conhecer, apesar de ser muito simples de compreender seu funcionamento. Como visto anteriormente este tipo mescla a rede do container com o do Host, vejamos um exemplo.
+
+```bash
+docker run -d --name nginxhost --network host nginx
+```
+
+Criando esse container com a rede *host*, podemos acessar o site do nginx apenas digitando o endereço `http://localhost` na maquina host, sem a necessidade de efetuar o bind das portas.
+
+## Acessando o host através do container
+
+Ainda falando sobre network, outro tipo de funcionalidade que pode ser necessária, é de o container precisar se conectar com a maquina host do docker, mas sem ter que criar uma rede para isso.
+
+Suponhamos que estamos com alguma api rodando no host na porta 8080 e algum container precise se conectar a essa api, podemos usar o seguinte comando:
+
+```bash
+curl http://host.docker.internal:8080
+```
+
+Com esse endereço o container consegue acessar o host sem precisar do endereço ip ou de precisar estar em alguma rede especifica.
