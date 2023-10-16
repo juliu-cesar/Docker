@@ -11,6 +11,7 @@ Para otimizar a imagem, vamos utilizar uma distribuição do Linux que é o **Al
 Vamos começar duplicando o arquivo Dockerfile e nomeando para `Dockerfile.prod`. Vejamos como ficou o arquivo após as modificações e em seguida uma lista comentando os principais pontos.
 
 ```dockerfile
+# PRIMEIRA ETAPA
 FROM php:8.2-cli AS builder
 WORKDIR /var/www
 
@@ -22,12 +23,15 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     php -r "unlink('composer-setup.php');"
 RUN php composer.phar create-project laravel/laravel laravel
 
+# SEGUNDA ETAPA
 FROM php:7.4-fpm-alpine
 WORKDIR /var/www
 
 RUN rm -rf /var/www/html
 
 COPY --from=builder /var/www/laravel .
+
+RUN ln -s public html
 
 RUN chown -R www-data:www-data /var/www
 
@@ -43,7 +47,9 @@ CMD [ "php-fpm" ]
 
 4. `COPY --from` : esta é uma parte importante, pois é nela que copiamos a pasta *laravel* da etapa anterior para esta nova etapa. Para efetuar um COPY no estagio anterior utilizamos o `--from=`, passando para ele o nome que definimos na primeira etapa. O restante do código é o mesmo para qualquer COPY, o primeiro endereço é a pasta alvo, e o segundo onde sera colado essa pasta.
 
-5. No segundo RUN alteramos o proprietário da pasta `/var/www` para o usuário e grupo *www-data*, que passa a ter permissão para fazer qualquer alteração nesse diretório. Vejamos o código por parte.
+5. No segundo comando RUN criamos um **link simbólico** (`RUN ln -s`), para quando for acessado a pasta *html* seja exibido o conteúdo da pasta *public*. Isso é necessário pois o laravel trabalha com a pasta *public*, porem o Nginx tenta acessar a pasta *html*, logo o meio mais simples é criar um link simbólico para redirecionar o acesso.
+
+6. Já o terceiro RUN alteramos o proprietário da pasta `/var/www` para o usuário e grupo *www-data*, que passa a ter permissão para fazer qualquer alteração nesse diretório. Vejamos o código por parte.
 
    - `chown` : utilizado para alterar o proprietário e grupo de arquivos e diretórios. Para o contexto do Docker, é utilizado para ajustar permissões dos arquivos no container.
 
@@ -53,7 +59,7 @@ CMD [ "php-fpm" ]
 
    - `/var/www` : define qual a pasta alvo.
 
-6. Por fim expomos a porta 9000 e executamos o php.
+7. Por fim expomos a porta **9000** e executamos o php.
 
 > No contexto do PHP-FPM, o `www-data` é um usuário e grupo comuns que são frequentemente usados para executar serviços web, pois eles têm permissões restritas e são geralmente mais seguros.
 
@@ -109,9 +115,15 @@ server {
 }
 ```
 
-No começo do arquivo temos as informações de qual porta o Nginx ira disponibilizar, qual a preferencia por arquivos índice e qual o diretório raiz onde estão os arquivos do site. Em seguida temos os *add_header* que configuram questões de segurança.
+- `listen` : configura a posta que o Nginx ira disponibilizar, no caso a 80.
 
-No primeiro `location` definimos como lidar com arquivos PHP (\\.php$). Qualquer solicitação para arquivos PHP ira ser encaminhada para o serviço PHP-FPM, que no caso estará rodando no container com nome *laravel* e porta 9000. O `location` seguinte lida com qualquer outra solicitação que não seja de arquivos PHP.
+- `index` : qual a preferencia por arquivos índice, no caso primeiro os arquivos PHP para depois os html.
+
+- `root` : qual o diretório raiz onde estão os arquivos do site, no caso para o endereço `/var/www/html`. Lembrando que esse diretório precisa ser o mesmo do qual foi configurado no Dockerfile do Laravel, onde adicionamos um link simbólico para a pasta *html*. Dessa forma o Nginx ira buscar na pasta *html* no Laravel, e sera redirecionado para a pasta *public*.
+
+- `add_header` : os tres *add_header* configuram os cabeçalhos para a questões de segurança.
+
+- `location` : no primeiro `location` definimos como lidar com arquivos PHP (\\.php$). Qualquer solicitação para arquivos PHP ira ser encaminhada para o serviço PHP-FPM, que no caso estará rodando no container com nome *laravel* e porta 9000. O segundo `location` lida com qualquer outra solicitação que não seja de arquivos PHP.
 
 Agora sera necessário injetar essa configuração na imagem do Nginx, pois a que foi construída anteriormente possui a configuração padrão. Então vamos duplicar o arquivo Dockerfile nomeando ele como `Dockerfile.prod`. Dentro dele temos as seguintes instruções:
 
@@ -122,4 +134,34 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
 
 RUN mkdir /var/www/html -p && touch /var/www/html/index.php
+```
+
+> A opção `-p` do *mkdir* serve para ele criar o diretório e sub-diretório caso eles não existam.
+
+1. Utilizamos a versão **Alpine** do Nginx por ser uma imagem mais leve.
+
+2. Excluímos a configuração padrão com o `RUN rm`, e em seguida copiamos o nosso arquivo de configuração para a mesma pasta com o `COPY`.
+
+3. Criamos um arquivo `index.php` dentro do diretório *html* com o `RUN mkdir`. Isso é necessário para o funcionamento do Nginx, pois quando um usuário acessar alguma coisa, ele bater nesse arquivo PHP e fazer a chamada remota que foi a que configuramos no arquivo *nginx.conf*. Caso contrario sera exibido o erro 404.
+
+O comando para gerar a imagem do Nginx fica:
+
+```bash
+docker build -t juliucesar/nginx:prod . -f Dockerfile.prod
+```
+
+## Executando o projeto
+
+Para subir os containers primeiro vamos criar uma rede Bridge exclusiva para esse projeto. O comando para criar o network fica:
+
+```bash
+docker network create laranet
+```
+
+Agora para subir os containers temos os seguintes comandos:
+
+```bash
+docker run -d --network laranet --name laravel juliucesar/laravel-optimized:prod
+
+docker run -d --network laranet --name nginx -p 8080:80 juliucesar/nginx-laravel:prod
 ```

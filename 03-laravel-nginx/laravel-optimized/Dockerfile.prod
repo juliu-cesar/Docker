@@ -22,16 +22,16 @@ COPY --from=builder /var/www/laravel .
 # A cópia sera feita do primeiro estagio do build (builder) onde temos o projeto laravel 
 # criado, e copiamos para a pasta de trabalho com o "."
 
-RUN chown -R www-data:www-data /var/www
-# Altera a propriedade da pasta "/var/www" para o usuario "www-data" e para o grupo que 
-# também tem o nome "www-data". Como a opção -R de recursividade foi passada, todos os 
-# arquivos e subpastas desse diretorio também pertenceram os proprietarios informados.
-
 RUN ln -s public html
 # Cria um link simbolico, para quando for acessado a pasta "html", seja exibido o conteudo 
 # da pasta "public", como se fosse um atalho. Isso é necessario pois o laravel trabalha
 # com a pasta "public", porem o Nginx tenta acessar a pasta "html", logo o meio mais
 # simples é criar um link simbolico para redirecionar o acesso.
+
+RUN chown -R www-data:www-data /var/www
+# Altera a propriedade da pasta "/var/www" para o usuario "www-data" e para o grupo que 
+# também tem o nome "www-data". Como a opção -R de recursividade foi passada, todos os 
+# arquivos e subpastas desse diretorio também pertenceram os proprietarios informados.
 
 EXPOSE 9000
 CMD [ "php-fpm" ]

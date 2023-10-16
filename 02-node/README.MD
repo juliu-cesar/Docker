@@ -78,4 +78,4 @@ Suponhamos então que o projeto ficou pronto, e precisa ser construída a imagem
 docker build -t juliucesar/express-hello . -f Dockerfile.prod
 ```
 
-Com a opção `-f` podemos informar o nome/local de um arquivo *Dockerfile* que possua um nome diferente do padrão. Caso ele esteja em outra pasta podemos informar `-f /nome-da-pasta/Dockerfile.prod`.
+Com a opção `-f` podemos informar o local/nome de um arquivo *Dockerfile* que possua um nome diferente do padrão. Caso ele esteja em outra pasta podemos informar `-f /nome-da-pasta/Dockerfile.prod`.
