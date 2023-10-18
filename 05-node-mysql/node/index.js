@@ -8,10 +8,10 @@ const config = {
     database: "node-mysql",
 };
 
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const conn = mysql.createConnection(config);
 
-const sql = `inset into people(name) values('juliu')`;
+const sql = `insert into people(name) values('juliu')`;
 conn.query(sql);
 conn.end();
 

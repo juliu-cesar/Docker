@@ -5,11 +5,11 @@ services:
     build: 
       context: node
     container_name: app
+    tty: true
     networks:
       - node-network
     volumes:
       - ./node:/usr/src/app
-    tty: true
     ports:
       - "3000:3000"
 
@@ -17,13 +17,11 @@ services:
     image: mysql:8.1
     container_name: db
     restart: always
-    tty: true
     volumes:
       - ./mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: non-root
       MYSQL_DATABASE: node-mysql
-      MYSQL_USER: user
       MYSQL_PASSWORD: root
     networks:
       - node-network
