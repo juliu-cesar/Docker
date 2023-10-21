@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  app-node:
+    build: 
+      context: node
+    container_name: app-node
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    tty: true
+    networks:
+      - node-network
+    volumes:
+      - ./node:/usr/src/app
+    ports:
+      - "3000:3000"
+
+  db-mysql: 
+    image: mysql:8.1
+    container_name: db-mysql
+    restart: always
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: non-root
+      MYSQL_DATABASE: node-mysql
+      MYSQL_PASSWORD: root
+    networks:
+      - node-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  node-network:
+    driver: bridge
