@@ -4,8 +4,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
+RUN chown -R node:node /usr/src/app
+
 EXPOSE 3000
-
-RUN chmod +x start.sh
-
 ENTRYPOINT [ "./start.sh" ]
