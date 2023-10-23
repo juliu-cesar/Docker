@@ -22,6 +22,7 @@ services:
     depends_on:
       db-mysql:
         condition: service_healthy
+    restart: always
     tty: true
     networks:
       - node-network
