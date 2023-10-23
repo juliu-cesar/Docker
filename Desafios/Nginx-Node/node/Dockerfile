@@ -2,7 +2,7 @@ FROM node:18
 
 WORKDIR /usr/src/app
 
-RUN npm init -y && npm install -y
+RUN npm install
 
 EXPOSE 3000
 

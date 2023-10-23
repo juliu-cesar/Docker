@@ -42,7 +42,7 @@ app.get("/", async (req, res) => {
         listName += `<li>${row.name}</li>`
     })
     
-    res.send("<h1>Full Cycle</h1>"+`<ul>${listName}</ul>`);
+    res.send("<h1>Full Cycle Rocks!</h1>"+`<ul>${listName}</ul>`);
 });
 
 app.listen(port, () => {
